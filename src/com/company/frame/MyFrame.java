@@ -486,7 +486,7 @@ public class MyFrame extends JFrame implements ActionListener {
             e.printStackTrace();
         }
         String fileString = new String(b);
-        String [] fileLines = fileString.split("\\r\\n");
+        String [] fileLines = fileString.split("\\r?\\n");
         String [][] invoicesCSV = new String[fileLines.length][3];
         for (int i = 0; i < fileLines.length; i++){
             String [] row = fileLines[i].split(",");
@@ -517,7 +517,7 @@ public class MyFrame extends JFrame implements ActionListener {
             e.printStackTrace();
         }
         String fileString = new String(b);
-        String [] fileLines = fileString.split("\\r\\n");
+        String [] fileLines = fileString.split("\\r?\\n");
         String [][] invoicesItemsCSV = new String[fileLines.length][4];
         for (int i = 0; i < fileLines.length; i++){
             String [] row = fileLines[i].split(",");
