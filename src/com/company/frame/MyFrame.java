@@ -1,4 +1,4 @@
-package com.company;
+package com.company.frame;
 
 import com.company.invoice.Invoice;
 import com.company.invoice.Item;

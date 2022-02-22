@@ -1,7 +1,6 @@
 package com.company;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import com.company.frame.MyFrame;
 
 public class Main {
 
