@@ -1,5 +1,6 @@
 package com.company.frame;
 
+import com.company.InvoiceController.FileOperations;
 import com.company.invoice.Invoice;
 import com.company.invoice.Item;
 
@@ -12,7 +13,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Arrays;
 
-public class MyFrame extends JFrame implements ActionListener {
+public class InvoiceFrame extends JFrame implements ActionListener {
     // Menu bar
     private JMenuBar menuBar;
     private JMenu fileMenu;
@@ -42,12 +43,14 @@ public class MyFrame extends JFrame implements ActionListener {
 
     private String currentDataDirectory = "./data/";
 
+    private FileOperations fileOperations = new FileOperations( invoices, this, currentDataDirectory);
+
     // Invoices
-    private Invoice[] invoicesArray = updateInvoicesArray( loadInvoiceHeader(""), loadInvoiceLine("")); // Load the data from the default directory
+    private Invoice[] invoicesArray = fileOperations.updateInvoicesArray( fileOperations.loadInvoiceHeader(""), fileOperations.loadInvoiceLine("")); // Load the data from the default directory
 
 
 
-    public MyFrame() throws HeadlessException {
+    public InvoiceFrame() throws HeadlessException {
         super("SIG");
         setLayout(new FlowLayout());
 
@@ -266,10 +269,10 @@ public class MyFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
             case "L":
-                loadFile(); // Load both InvoiceHeader.csv and InvoiceLine.csv files with the instructed format
+                fileOperations.loadFile(invoicesArray); // Load both InvoiceHeader.csv and InvoiceLine.csv files with the instructed format
                 break;
             case "S":
-                saveFile(); // Save the current changes to the loaded InvoiceHeader.csv and InvoiceLine.csv files
+                fileOperations.saveFile(invoicesArray); // Save the current changes to the loaded InvoiceHeader.csv and InvoiceLine.csv files
                 break;
             case "C":
                 // Add new empty row to the invoices' table where it can be edited later
@@ -380,184 +383,4 @@ public class MyFrame extends JFrame implements ActionListener {
         invoices.setModel( model );
     }
 
-
-    private void loadFile() {
-        JFileChooser fc = new JFileChooser();
-        fc.setMultiSelectionEnabled(true);
-        int result = fc.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File[] files = fc.getSelectedFiles();
-            File invoiceHeader;
-            File invoiceLine;
-            try {
-                String file0 = files[0].getName();
-                String file1 = files[1].getName();
-
-                if (file0.equals("InvoiceHeader.csv")) {
-                    invoiceHeader = files[0];
-                    invoiceLine = files[1];
-                } else if (file1.equals("InvoiceHeader.csv")) {
-                    invoiceHeader = files[1];
-                    invoiceLine = files[0];
-                } else {
-                    throw new IOException();
-                }
-                String[][] invoiceHeaderCsv = loadInvoiceHeader(invoiceHeader.getPath());
-                String[][] invoiceLineCsv = loadInvoiceLine(invoiceLine.getPath());
-                invoicesArray = updateInvoicesArray(invoiceHeaderCsv, invoiceLineCsv);
-                currentDataDirectory = invoiceHeader.getParent() + File.separatorChar;
-                renderInvoiceTable();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Please select InvoiceHeader.csv and InvoiceLine.csv files", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-            }
-
-
-        }
-    }
-    private void saveFile() {
-
-        String invoiceHeaderCSV = "";
-        for (Invoice value : invoicesArray) {
-            String[] invoice = value.getInvoiceArray();
-
-            invoiceHeaderCSV = invoiceHeaderCSV + invoice[0];
-            invoiceHeaderCSV = invoiceHeaderCSV + ",";
-            invoiceHeaderCSV = invoiceHeaderCSV + invoice[1];
-            invoiceHeaderCSV = invoiceHeaderCSV + ",";
-            invoiceHeaderCSV = invoiceHeaderCSV + invoice[2];
-            invoiceHeaderCSV = invoiceHeaderCSV + "\r\n";
-
-        }
-        File invoiceHeader = new File(currentDataDirectory  + "InvoiceHeader.csv");
-        try {
-            FileWriter writer = new FileWriter(invoiceHeader);
-            writer.write(invoiceHeaderCSV);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        String invoiceLineCSV = "";
-        for (int i = 0; i < invoicesArray.length; i++) {
-            String[][] items = invoicesArray[i].getItemsArray();
-
-            for (int j = 0; j < items.length; j++) {
-                invoiceLineCSV = invoiceLineCSV + invoicesArray[i].getInvoiceNumber();
-                invoiceLineCSV = invoiceLineCSV + ",";
-                invoiceLineCSV = invoiceLineCSV + items[j][1];
-                invoiceLineCSV = invoiceLineCSV + ",";
-                invoiceLineCSV = invoiceLineCSV + items[j][2];
-                invoiceLineCSV = invoiceLineCSV + ",";
-                invoiceLineCSV = invoiceLineCSV + items[j][3];
-                invoiceLineCSV = invoiceLineCSV + "\r\n";
-            }
-        }
-        File invoiceLine = new File(currentDataDirectory  + "InvoiceLine.csv");
-        try {
-            FileWriter writer = new FileWriter(invoiceLine);
-            writer.write(invoiceLineCSV);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    private String[][] loadInvoiceHeader(String path) {
-        if (path.equals("")) {
-            path = "./data/InvoiceHeader.csv";
-        }
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(path);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        int size = 0;
-        try {
-            size = fis.available();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        byte[] b = new byte[size];
-        try {
-            fis.read(b);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String fileString = new String(b);
-        String [] fileLines = fileString.split("\\r?\\n");
-        String [][] invoicesCSV = new String[fileLines.length][3];
-        for (int i = 0; i < fileLines.length; i++){
-            String [] row = fileLines[i].split(",");
-            System.arraycopy(row, 0, invoicesCSV[i], 0, row.length);
-        }
-        return  invoicesCSV;
-    }
-    private String[][] loadInvoiceLine(String path) {
-        if (path.equals("")) {
-            path = "./data/InvoiceLine.csv";
-        }
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(path);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        int size = 0;
-        try {
-            size = fis.available();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        byte[] b = new byte[size];
-        try {
-            fis.read(b);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String fileString = new String(b);
-        String [] fileLines = fileString.split("\\r?\\n");
-        String [][] invoicesItemsCSV = new String[fileLines.length][4];
-        for (int i = 0; i < fileLines.length; i++){
-            String [] row = fileLines[i].split(",");
-            System.arraycopy(row, 0, invoicesItemsCSV[i], 0, row.length);
-        }
-        return  invoicesItemsCSV;
-    }
-    private Invoice[] updateInvoicesArray(String[][] invoiceHeader, String[][] invoiceLine) {
-        Invoice[] invoicesArray = new Invoice[ invoiceHeader.length ];
-        for (int i = 0; i < invoicesArray.length; i++) {
-
-            int itemsCount = 0;
-            for (int j = 0; j < invoiceLine.length; j++) {
-                if (Integer.parseInt(invoiceLine[j][0]) == i + 1) {
-                    itemsCount++;
-                } else if (Integer.parseInt(invoiceLine[j][0]) > i + 1) {
-                    break;
-                }
-            }
-            Item[] items = new Item[itemsCount];
-            int itemIndex = 0;
-            for (int j = 0; j < invoiceLine.length; j++) {
-                if (Integer.parseInt(invoiceLine[j][0]) == i + 1) {
-                    items[itemIndex] = new Item();
-                    items[itemIndex].setItemName(invoiceLine[j][1]);
-                    items[itemIndex].setItemPrice(Integer.parseInt(invoiceLine[j][2]));
-                    items[itemIndex].setCount(Integer.parseInt(invoiceLine[j][3]));
-                    itemIndex++;
-                } else if (Integer.parseInt(invoiceLine[j][0]) > i + 1) {
-                    break;
-                }
-            }
-            invoicesArray[i] = new Invoice();
-            invoicesArray[i].setInvoiceNumber(i+1);
-            invoicesArray[i].setInvoiceDate(invoiceHeader[i][1]);
-            invoicesArray[i].setCustomerName(invoiceHeader[i][2]);
-            invoicesArray[i].setItems(items);
-
-        }
-
-        return invoicesArray;
-    }
 }
