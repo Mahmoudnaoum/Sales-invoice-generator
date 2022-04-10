@@ -43,7 +43,7 @@ public class InvoiceFrame extends JFrame implements ActionListener {
 
     private String currentDataDirectory = "./data/";
 
-    private FileOperations fileOperations = new FileOperations( invoices, this, currentDataDirectory);
+    private FileOperations fileOperations = new FileOperations( invoices , this, currentDataDirectory);
 
     // Invoices
     private Invoice[] invoicesArray = fileOperations.updateInvoicesArray( fileOperations.loadInvoiceHeader(""), fileOperations.loadInvoiceLine("")); // Load the data from the default directory
@@ -269,9 +269,13 @@ public class InvoiceFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
             case "L":
-                fileOperations.loadFile(invoicesArray); // Load both InvoiceHeader.csv and InvoiceLine.csv files with the instructed format
+
+                fileOperations.updateInvoices(invoices);
+                invoicesArray = fileOperations.loadFile(invoicesArray); // Load both InvoiceHeader.csv and InvoiceLine.csv files with the instructed format
+                renderInvoiceTable();
                 break;
             case "S":
+                fileOperations.updateInvoices(invoices);
                 fileOperations.saveFile(invoicesArray); // Save the current changes to the loaded InvoiceHeader.csv and InvoiceLine.csv files
                 break;
             case "C":

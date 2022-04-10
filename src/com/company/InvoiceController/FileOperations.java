@@ -15,14 +15,18 @@ public class FileOperations {
     Component thisComponent;
     String currentDataDirectory;
 
+
     public FileOperations (JTable invoices, Component thisComponent, String currentDataDirectory) {
         this.invoices = invoices;
         this.thisComponent = thisComponent;
         this.currentDataDirectory = currentDataDirectory;
     }
+    public void updateInvoices ( JTable invoices ) {
+        this.invoices = invoices;
+    }
 
 
-    public void loadFile(Invoice[] invoicesArray) {
+    public Invoice[] loadFile(Invoice[] invoicesArray) {
         JFileChooser fc = new JFileChooser();
         fc.setMultiSelectionEnabled(true);
         int result = fc.showOpenDialog(thisComponent);
@@ -47,14 +51,19 @@ public class FileOperations {
                 String[][] invoiceLineCsv = loadInvoiceLine(invoiceLine.getPath());
                 invoicesArray = updateInvoicesArray(invoiceHeaderCsv, invoiceLineCsv);
                 currentDataDirectory = invoiceHeader.getParent() + File.separatorChar;
-                renderInvoiceTable(invoicesArray);
+                Invoice[] finalInvoicesArray = invoicesArray;
+                return finalInvoicesArray;
+//                renderInvoiceTable(invoicesArray);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(thisComponent, "Please select InvoiceHeader.csv and InvoiceLine.csv files", "Error",
                         JOptionPane.ERROR_MESSAGE);
+
             }
 
 
+
         }
+        return null;
     }
 
     public void saveFile(Invoice[] invoicesArray) {
@@ -212,7 +221,7 @@ public class FileOperations {
 
         String[] invoicesColumn ={"No.","Date","Customer","Total"};
         DefaultTableModel model = new DefaultTableModel(invoicesData, invoicesColumn);
-        invoices.setModel( model );
+        this.invoices.setModel( model );
     }
 
 
